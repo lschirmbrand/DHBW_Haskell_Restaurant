@@ -1,0 +1,5 @@
+-- Infos
+-- fromIntegral for converting. See https://wiki.haskell.org/Converting_numbers and https://stackoverflow.com/questions/19019093/haskell-multiplying-int-and-float-within-a-function
+-- filter, map, foldr1, foldl1 Haskell Funktionen verwendet
+-- Data.Ord verwendet, da :type und Error dies erwarten
+-- fsd und snd für Erlangung des ersten und zweiten Wertes aus einem Tupel
