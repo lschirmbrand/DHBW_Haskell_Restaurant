@@ -31,6 +31,15 @@ buchungen = [((2020,1,1),(17,0),3),((2020,1,1),(17,9),3),((2020,1,1),(17,16),2),
 anzahl :: (Int,Int,Int) -> String -> Int
 anzahl (j,m,t) bez = length (filterFacade (j,m,t) bez)
 
+-- Aufgabe 2
+
+umsatz :: (Int,Int,Int) -> String -> Float
+umsatz (j,m,t) bez = sum.mapPreis.mapFindeArtikel.mapArtikelId filterFacade (j,m,d) bez
+  where 
+    mapArtikelId = map (\(((_),(_),articleId)) -> articleId)
+    mapFindeArtikel = map findeArtikel
+    mapPreis = map ((_,_,_,preis,_) -> preis)
+
 
 -- Kombiniert alle Filterfunktionen und gibt die Buchungen zurück, die mit dem Filter übereinstimmen
 filterFacade :: (Int,Int,Int) -> String -> [((Int,Int,Int),(Int,Int),Int)]
@@ -62,3 +71,13 @@ filterArtikelAusString bezeichnung =  if length(filterFunktion) > 0 then filterF
 filterBuchungenNachArtikel :: [(Int,String,String,Float,Float)] -> [((Int,Int,Int),(Int,Int),Int)] -> [((Int,Int,Int),(Int,Int),Int)]
 filterBuchungenNachArtikel [] liste = []
 filterBuchungenNachArtikel ((artikelNr,_,_,_,_):xs) liste = filter(\((_,_,_),_,nr) -> artikelNr == nr) liste ++ filterBuchungenNachArtikel xs liste
+
+
+-- gibt den Artikel anhand der ID zurück
+findeArtikel :: Int -> (Int,String,String,Float,Float)
+findeArtikel id 
+  | length (gefiltert id) == 1 = gefiltert id :: 0
+  | length (gefiltert id) == 0 = error "Artikel mit ID " ++ id ++" existiert nicht"
+  | otherwise = error "Artikel ID "++id++" ist nicht eindeutig"
+    where
+        gefiltert artikelId = filter (\(id,_,_,_,_) -> id == artikelId) artikel 
