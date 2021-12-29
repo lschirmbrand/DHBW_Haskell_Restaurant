@@ -34,11 +34,21 @@ anzahl (j,m,t) bez = length (filterFacade (j,m,t) bez)
 -- Aufgabe 2
 
 umsatz :: (Int, Int, Int) -> String -> Float
-umsatz date bez = sum (mapArtikelIdZuPreis (filterFacade date bez))
+umsatz date bez = sum (mapBuchungZuPreis (filterFacade date bez))
+
+-- Aufgabe 3
+
+gewinn :: (Int, Int, Int) -> String -> Float
+gewinn (j, m, t) bez = umsatz (j,m,t) bez - einzelkosten (j,m,t) bez - gemeinkostenProBuchung (j,m) * fromIntegral(anzahl (j,m,t) bez)
   where
-    mapArtikelIdZuPreis artikel = map (preis . findeArtikel . artikelId) artikel
-    artikelId (_, _, artikelId) = artikelId
-    preis (_, _, _, preis, _) = preis
+    einzelkosten date bez = sum (mapBuchungZuKosten (filterFacade date bez))
+    gemeinkostenProBuchung (j,m) = sumGemeinkosten (j,m) / fromIntegral (anzahl (j,m,0) "*")
+    filterFunc ((jahr, monat), _) = jahr == j && monat == m
+
+sumGemeinkosten :: (Int, Int) -> Float
+sumGemeinkosten (jahr,mon) = filterSum (jahr, mon) pacht + filterSum (jahr, mon) loehne
+  where
+    filterSum (jahr,mon) liste =  sum (map snd (filter (\((j,m),_) -> j == jahr && m == mon) liste))
 
 -- Kombiniert alle Filterfunktionen und gibt die Buchungen zurück, die mit dem Filter übereinstimmen
 filterFacade :: (Int,Int,Int) -> String -> [((Int,Int,Int),(Int,Int),Int)]
@@ -47,7 +57,7 @@ filterFacade (j,m,t) bez = filterBuchungenNachArtikel (filterArtikelAusString be
 
 -- Kombination der unterschiedlichen Datenfilter
 filterNachDatum :: (Int, Int, Int) -> [((Int,Int,Int),(Int,Int),Int)]
-filterNachDatum (j,m,t) = filterNachTag t ((filterNachMonat m (filterNachJahr j buchungen))) 
+filterNachDatum (j,m,t) = filterNachTag t ((filterNachMonat m (filterNachJahr j buchungen)))
 
 filterNachJahr :: Int -> [((Int,Int,Int),(Int,Int),Int)] -> [((Int,Int,Int),(Int,Int),Int)]
 filterNachJahr j liste = filter(\((jahrInBuchung,_,_),_,_) -> jahrInBuchung == j) liste
@@ -72,6 +82,18 @@ filterBuchungenNachArtikel [] liste = []
 filterBuchungenNachArtikel ((artikelNr,_,_,_,_):xs) liste = filter(\((_,_,_),_,nr) -> artikelNr == nr) liste ++ filterBuchungenNachArtikel xs liste
 
 
+-- gibt für Buchungen die jeweiligen Preise zurück
+mapBuchungZuPreis :: [((Int,Int,Int),(Int,Int),Int)] -> [Float]
+mapBuchungZuPreis = map (preis . findeArtikel . artikelId)
+
+-- gibt für Buchungen die jeweiligen Preise zurück
+mapBuchungZuKosten :: [((Int,Int,Int),(Int,Int),Int)] -> [Float]
+mapBuchungZuKosten = map (kosten . findeArtikel . artikelId)
+
+-- gibt aus einer Buchung die Artikel ID zurück
+artikelId :: ((Int,Int,Int),(Int,Int),Int) -> Int
+artikelId (_,_,id) = id
+
 -- gibt den Artikel anhand der ID zurück
 findeArtikel :: Int -> (Int, String, String, Float, Float)
 findeArtikel id
@@ -80,3 +102,12 @@ findeArtikel id
   | otherwise = error ("Artikel ID " ++ show id ++ " ist nicht eindeutig")
   where
     gefiltert artikelId = filter (\(id, _, _, _, _) -> id == artikelId) artikel
+
+
+-- gibt für einen Artikel den Preis zurück
+preis :: (Int,String,String,Float,Float) -> Float
+preis (_,_,_,p,_) = p
+
+-- gibt für einen Artikel die Einzelkosten zurück
+kosten :: (Int,String,String,Float,Float) -> Float
+kosten (_,_,_,_,k) = k
