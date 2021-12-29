@@ -43,12 +43,10 @@ gewinn (j, m, t) bez = umsatz (j, m, t) bez - einzelkosten (j, m, t) bez - gemei
   where
     einzelkosten date bez = sum (mapBuchungZuKosten (filterFacade date bez))
     gemeinkostenProBuchung (j, m) = sumGemeinkosten (j, m) / fromIntegral (anzahl (j, m, 0) "*")
-    filterFunc ((jahr, monat), _) = jahr == j && monat == m
-
-sumGemeinkosten :: (Int, Int) -> Float
-sumGemeinkosten (jahr, mon) = filterSum (jahr, mon) pacht + filterSum (jahr, mon) loehne
-  where
-    filterSum (jahr, mon) liste = sum (map snd (filter (\((j, m), _) -> j == jahr && m == mon) liste))
+      where
+        sumGemeinkosten (jahr, mon) = filterSum (jahr, mon) pacht + filterSum (jahr, mon) loehne
+          where
+            filterSum (jahr, mon) liste = sum (map snd (filter (\((j, m), _) -> j == jahr && m == mon) liste))
 
 -- Kombiniert alle Filterfunktionen und gibt die Buchungen zurück, die mit dem Filter übereinstimmen
 filterFacade :: (Int, Int, Int) -> String -> [((Int, Int, Int), (Int, Int), Int)]
@@ -56,13 +54,13 @@ filterFacade (j, m, t) bez = filterBuchungenNachArtikel (filterArtikelAusString 
 
 -- Kombination der unterschiedlichen Datenfilter
 filterNachDatum :: (Int, Int, Int) -> [((Int, Int, Int), (Int, Int), Int)]
-filterNachDatum (j, m, t) = filterNachTag t ((filterNachMonat m (filterNachJahr j buchungen)))
+filterNachDatum (j, m, t) = filterNachTag t (filterNachMonat m (filterNachJahr j buchungen))
 
 filterNachJahr :: Int -> [((Int, Int, Int), (Int, Int), Int)] -> [((Int, Int, Int), (Int, Int), Int)]
-filterNachJahr j liste = filter (\((jahrInBuchung, _, _), _, _) -> jahrInBuchung == j) liste
+filterNachJahr j = filter (\((jahrInBuchung, _, _), _, _) -> jahrInBuchung == j)
 
 filterNachMonat :: Int -> [((Int, Int, Int), (Int, Int), Int)] -> [((Int, Int, Int), (Int, Int), Int)]
-filterNachMonat m liste = filter (\((_, monatInBuchung, _), _, _) -> monatInBuchung == m) liste
+filterNachMonat m = filter (\((_, monatInBuchung, _), _, _) -> monatInBuchung == m)
 
 filterNachTag :: Int -> [((Int, Int, Int), (Int, Int), Int)] -> [((Int, Int, Int), (Int, Int), Int)]
 filterNachTag 0 liste = liste
@@ -71,7 +69,7 @@ filterNachTag t liste = filter (\((_, _, tagInBuchung), _, _) -> tagInBuchung ==
 -- Filtert alle Artikel mit passender Bezeichnung oder Kategorie bzw. '*'; Fehlermeldung bei keiner Übereinstimmung
 filterArtikelAusString :: String -> [(Int, String, String, Float, Float)]
 filterArtikelAusString "*" = artikel
-filterArtikelAusString bezeichnung = if length (filterFunktion) > 0 then filterFunktion else error "Artikel/Kategorie nicht gefunden. Sollen alle Artikel durchsucht werden '*' verwenden!"
+filterArtikelAusString bezeichnung = if not (null filterFunktion) then filterFunktion else error "Artikel/Kategorie nicht gefunden. Sollen alle Artikel durchsucht werden '*' verwenden!"
   where
     filterFunktion = filter (\(_, bez, kat, _, _) -> bez == bezeichnung || kat == bezeichnung) artikel
 
@@ -83,10 +81,14 @@ filterBuchungenNachArtikel ((artikelNr, _, _, _, _) : xs) liste = filter (\((_, 
 -- gibt für Buchungen die jeweiligen Preise zurück
 mapBuchungZuPreis :: [((Int, Int, Int), (Int, Int), Int)] -> [Float]
 mapBuchungZuPreis = map (preis . findeArtikel . artikelId)
+  where
+    preis (_, _, _, p, _) = p
 
 -- gibt für Buchungen die jeweiligen Preise zurück
 mapBuchungZuKosten :: [((Int, Int, Int), (Int, Int), Int)] -> [Float]
 mapBuchungZuKosten = map (kosten . findeArtikel . artikelId)
+  where
+    kosten (_, _, _, _, k) = k
 
 -- gibt aus einer Buchung die Artikel ID zurück
 artikelId :: ((Int, Int, Int), (Int, Int), Int) -> Int
@@ -100,11 +102,3 @@ findeArtikel id
   | otherwise = error ("Artikel ID " ++ show id ++ " ist nicht eindeutig")
   where
     gefiltert artikelId = filter (\(id, _, _, _, _) -> id == artikelId) artikel
-
--- gibt für einen Artikel den Preis zurück
-preis :: (Int, String, String, Float, Float) -> Float
-preis (_, _, _, p, _) = p
-
--- gibt für einen Artikel die Einzelkosten zurück
-kosten :: (Int, String, String, Float, Float) -> Float
-kosten (_, _, _, _, k) = k
