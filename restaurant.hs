@@ -51,51 +51,22 @@ gewinn (j, m, t) bez = umsatz (j, m, t) bez - einzelkosten (j, m, t) bez - gemei
 -- Aufgabe 4
 
 topAnzahl :: (Int, Int) -> (String, Int, Float)
-topAnzahl (j, m) = (bez, wert, fromIntegral wert / fromIntegral gesamt)
-  where
-    (bez, wert) = topFlop True (j, m) anzahl
-    gesamt = anzahl (j, m, 0) "*"
+topAnzahl (j, m) = topFlop True (j, m) anzahl anteilInt
 
 flopAnzahl :: (Int, Int) -> (String, Int, Float)
-flopAnzahl (j, m) = (bez, wert, fromIntegral wert / fromIntegral gesamt)
-  where
-    (bez, wert) = topFlop False (j, m) anzahl
-    gesamt = anzahl (j, m, 0) "*"
+flopAnzahl (j, m) = topFlop False (j, m) anzahl anteilInt
 
 topUmsatz :: (Int, Int) -> (String, Float, Float)
-topUmsatz (j, m) = (bez, wert, wert / gesamt)
-  where
-    (bez, wert) = topFlop True (j, m) umsatz
-    gesamt = umsatz (j, m, 0) "*"
+topUmsatz (j, m) = topFlop True (j, m) umsatz anteilFloat
 
 flopUmsatz :: (Int, Int) -> (String, Float, Float)
-flopUmsatz (j, m) = (bez, wert, wert / gesamt)
-  where
-    (bez, wert) = topFlop False (j, m) umsatz
-    gesamt = umsatz (j, m, 0) "*"
+flopUmsatz (j, m) = topFlop False (j, m) umsatz anteilFloat
 
 topGewinn :: (Int, Int) -> (String, Float, Float)
-topGewinn (j, m) = (bez, wert, wert / gesamt)
-  where
-    (bez, wert) = topFlop True (j, m) gewinn
-    gesamt = gewinn (j, m, 0) "*"
+topGewinn (j, m) = topFlop True (j, m) gewinn anteilFloat
 
 flopGewinn :: (Int, Int) -> (String, Float, Float)
-flopGewinn (j, m) = (bez, wert, wert / gesamt)
-  where
-    (bez, wert) = topFlop False (j, m) gewinn
-    gesamt = gewinn (j, m, 0) "*"
-
-topFlop :: (Ord a) => Bool -> (Int, Int) -> ((Int, Int, Int) -> String -> a) -> (String, a)
-topFlop topOderFlop (j, m) wertFkt = berechneExtremum topOderFlop (berechneWerte wertFkt (j, m) artikel)
-  where
-    berechneWerte wertFkt (j, m) = map (\(_, bez, _, _, _) -> (bez, wertFkt (j, m, 0) bez))
-    berechneExtremum _ [] = error "Liste lehr"
-    berechneExtremum minOderMax (x : xs) = foldl vergleiche x xs
-      where
-        vergleiche a b
-          | minOderMax = if snd a > snd b then a else b
-          | otherwise = if snd a < snd b then a else b
+flopGewinn (j, m) = topFlop False (j, m) gewinn anteilFloat
 
 -- allgemeine Funktionen
 
@@ -153,3 +124,24 @@ findeArtikel id
   | otherwise = error ("Artikel ID " ++ show id ++ " ist nicht eindeutig")
   where
     gefiltert artikelId = filter (\(id, _, _, _, _) -> id == artikelId) artikel
+
+-- berreichnet den Top/Flot anhand der werteFkt (anzahl/umsatz/gewinn) eines Monats. Die anteilFkt unterscheidet sich für Int und Float Werten
+topFlop :: (Ord a, Num a) => Bool -> (Int, Int) -> ((Int, Int, Int) -> String -> a) -> (a -> a -> Float) -> (String, a, Float)
+topFlop topOderFlop (j, m) wertFkt anteilFkt = (bez, wert, anteilFkt wert gesamt)
+  where
+    berechneWerte wertFkt (j, m) = map (\(_, bez, _, _, _) -> (bez, wertFkt (j, m, 0) bez))
+    (bez, wert) = berechneExtremum topOderFlop (berechneWerte wertFkt (j, m) artikel)
+    gesamt = wertFkt (j, m, 0) "*"
+    berechneExtremum _ [] = error "Liste lehr"
+    berechneExtremum topOderFlop (x : xs) = foldl vergleiche x xs
+      where
+        vergleiche a b
+          | topOderFlop = if snd a > snd b then a else b
+          | otherwise = if snd a < snd b then a else b
+
+
+anteilInt :: Int -> Int -> Float
+anteilInt a b = fromIntegral a / fromIntegral b
+
+anteilFloat :: Float -> Float -> Float
+anteilFloat a b = a / b
