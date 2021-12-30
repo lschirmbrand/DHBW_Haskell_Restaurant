@@ -48,6 +48,57 @@ gewinn (j, m, t) bez = umsatz (j, m, t) bez - einzelkosten (j, m, t) bez - gemei
           where
             filterSum (jahr, mon) liste = sum (map snd (filter (\((j, m), _) -> j == jahr && m == mon) liste))
 
+-- Aufgabe 4
+
+topAnzahl :: (Int, Int) -> (String, Int, Float)
+topAnzahl (j, m) = (bez, wert, fromIntegral wert / fromIntegral gesamt)
+  where
+    (bez, wert) = topFlop True (j, m) anzahl
+    gesamt = anzahl (j, m, 0) "*"
+
+flopAnzahl :: (Int, Int) -> (String, Int, Float)
+flopAnzahl (j, m) = (bez, wert, fromIntegral wert / fromIntegral gesamt)
+  where
+    (bez, wert) = topFlop False (j, m) anzahl
+    gesamt = anzahl (j, m, 0) "*"
+
+topUmsatz :: (Int, Int) -> (String, Float, Float)
+topUmsatz (j, m) = (bez, wert, wert / gesamt)
+  where
+    (bez, wert) = topFlop True (j, m) umsatz
+    gesamt = umsatz (j, m, 0) "*"
+
+flopUmsatz :: (Int, Int) -> (String, Float, Float)
+flopUmsatz (j, m) = (bez, wert, wert / gesamt)
+  where
+    (bez, wert) = topFlop False (j, m) umsatz
+    gesamt = umsatz (j, m, 0) "*"
+
+topGewinn :: (Int, Int) -> (String, Float, Float)
+topGewinn (j, m) = (bez, wert, wert / gesamt)
+  where
+    (bez, wert) = topFlop True (j, m) gewinn
+    gesamt = gewinn (j, m, 0) "*"
+
+flopGewinn :: (Int, Int) -> (String, Float, Float)
+flopGewinn (j, m) = (bez, wert, wert / gesamt)
+  where
+    (bez, wert) = topFlop False (j, m) gewinn
+    gesamt = gewinn (j, m, 0) "*"
+
+topFlop :: (Ord a) => Bool -> (Int, Int) -> ((Int, Int, Int) -> String -> a) -> (String, a)
+topFlop topOderFlop (j, m) wertFkt = berechneExtremum topOderFlop (berechneWerte wertFkt (j, m) artikel)
+  where
+    berechneWerte wertFkt (j, m) = map (\(_, bez, _, _, _) -> (bez, wertFkt (j, m, 0) bez))
+    berechneExtremum _ [] = error "Liste lehr"
+    berechneExtremum minOderMax (x : xs) = foldl vergleiche x xs
+      where
+        vergleiche a b
+          | minOderMax = if snd a > snd b then a else b
+          | otherwise = if snd a < snd b then a else b
+
+-- allgemeine Funktionen
+
 -- Kombiniert alle Filterfunktionen und gibt die Buchungen zurück, die mit dem Filter übereinstimmen
 filterFacade :: (Int, Int, Int) -> String -> [((Int, Int, Int), (Int, Int), Int)]
 filterFacade (j, m, t) bez = filterBuchungenNachArtikel (filterArtikelAusString bez) (filterNachDatum (j, m, t))
