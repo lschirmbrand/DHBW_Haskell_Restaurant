@@ -4,6 +4,7 @@ Teilnehmer:
 - Luca Schirmbrand
 - Niel Rohling
 - Simon Bestler
+
 ## Aufgaben:
 ### Aufgabe 1: Die Anzahl:
 #### Aufgabenstellung:
@@ -35,18 +36,18 @@ Die Funktion liefert den Gewinn, also den Umsatz abzüglich der Einzel- sowie Ge
 ### Aufgabe 4: Die Top-/Flop-Analyse
 
 Schließlich sollen die folgenden Funktionen implementiert werden:
-**topAnzahl :: (Int,Int) -> (String,Int,Float)
-flopAnzahl :: (Int,Int) -> (String,Int,Float)
-topUmsatz :: (Int,Int) -> (String,Float,Float)
-flopUmsatz :: (Int,Int) -> (String,Float,Float)
-topGewinn :: (Int,Int) -> (String,Float,Float)
-flopGewinn :: (Int,Int) -> (String,Float,Float)**
+**topAnzahl :: (Int,Int) -> (String,Int,Float)\
+flopAnzahl :: (Int,Int) -> (String,Int,Float)\
+topUmsatz :: (Int,Int) -> (String,Float,Float)\
+flopUmsatz :: (Int,Int) -> (String,Float,Float)\
+topGewinn :: (Int,Int) -> (String,Float,Float)\
+flopGewinn :: (Int,Int) -> (String,Float,Float)**\
 
 Es handelt sich also um eine Top-/Flop-Analyse von Anzahl, Umsatz und Gewinn. Top: Ausgabe des stärksten Artikels; Flop: Ausgabe des schwächsten Artikels. Eingabeparameter ist Jahr und Monat, in der Ausgabe ist die Artikelbeschreibung und der Wert, also die Anzahl, der Umsatz oder der Gewinn dieses Artikels in diesem Monat. Zuletzt wird noch ein weiterer Float ausgegeben. Dabei handelt es sich um den prozentuellen Anteil im betreffenden Monat. Die anteilige Anzahl wird daher mit "Anzahl des Artikels in dem Monat"/"Gesamtanzahl verkaufter Artikel in dem Monat" berechnet. Umsatz und Gewinn analog. Darstellung ist z.B: "0.25" für 25 %.
 #### Beispiel:
----> *topAnzahl (2020,6)*
----> *flopAnzahl (2020,6)*
----> *topUmsatz (2020,6)*
----> *flopUmsatz (2020,6)*
----> *topGewinn(2020,6)*
+---> *topAnzahl (2020,6)*\
+---> *flopAnzahl (2020,6)*\
+---> *topUmsatz (2020,6)*\
+---> *flopUmsatz (2020,6)*\
+---> *topGewinn(2020,6)*\
 ---> *flopGewinn(2020,6)*
